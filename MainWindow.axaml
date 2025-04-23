@@ -9,6 +9,38 @@
     <Window.Styles>
         <Style Selector="Button">
             <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Background" Value="#444"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <!-- Improved Slider style -->
+        <Style Selector="Slider">
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="MinHeight" Value="24"/>
+        </Style>
+        
+        <!-- Style for labels in adjustment panel -->
+        <Style Selector="TextBlock.AdjustmentLabel">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Width" Value="80"/>
+        </Style>
+        
+        <!-- Style for expanders -->
+        <Style Selector="Expander">
+            <Setter Property="Background" Value="#444"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,3"/>
+        </Style>
+        
+        <!-- GridSplitter style -->
+        <Style Selector="GridSplitter">
+            <Setter Property="Background" Value="#555"/>
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
         </Style>
     </Window.Styles>
     
@@ -19,29 +51,31 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/> <!-- Left panel (for controls) -->
-            <ColumnDefinition Width="*"/>   <!-- Center area (for photo) -->
-            <ColumnDefinition Width="200"/> <!-- Right panel (for adjustments) -->
+            <ColumnDefinition Width="200" MinWidth="120" MaxWidth="400"/> <!-- Left panel (for controls) -->
+            <ColumnDefinition Width="Auto"/> <!-- GridSplitter -->
+            <ColumnDefinition Width="*" MinWidth="200"/> <!-- Center area (for photo) -->
+            <ColumnDefinition Width="Auto"/> <!-- GridSplitter -->
+            <ColumnDefinition Width="250" MinWidth="150" MaxWidth="450"/> <!-- Right panel (for adjustments) -->
         </Grid.ColumnDefinitions>
 
         <!-- Top Dock Panel -->
-        <Menu Grid.Row="0" Grid.ColumnSpan="3">
+        <Menu Grid.Row="0" Grid.ColumnSpan="5">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Click="OpenImage_Click"/>
-                <MenuItem Header="Save"/>
+                <MenuItem Header="Save" Click="SaveImage_Click"/>
                 <MenuItem Header="Export"/>
-                <MenuItem Header="Exit" Click="ExitProgram"/>
+                <MenuItem Header="Exit" Click="ExitProgram_Click"/>
             </MenuItem>
             <MenuItem Header="Edit">
                 <MenuItem Header="Undo"/>
                 <MenuItem Header="Redo"/>
                 <MenuItem Header="Crop"/>
-                <MenuItem Header="Rotate"/>
+                <MenuItem Header="Rotate 90°" Click="Rotate90Degrees_Click"/>
             </MenuItem>
             <MenuItem Header="View">
-                <MenuItem Header="Zoom In" Click="ZoomIn"/>
-                <MenuItem Header="Zoom Out" Click="ZoomOut"/>
-                <MenuItem Header="Full Screen" Click="FullScreen"/>
+                <MenuItem Header="Zoom In" Click="ZoomIn_Click"/>
+                <MenuItem Header="Zoom Out" Click="ZoomOut_Click"/>
+                <MenuItem Header="Full Screen" Click="FullScreen_Click"/>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About"/>
@@ -51,15 +85,19 @@
 
 
         <!-- Left panel (controls) -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Background="#333" Width="200">
-            <Button Content="Crop" Foreground="White" Background="#444"/>
-            <Button Content="Rotate" Foreground="White" Background="#444"/>
-            <Button Content="Export" Foreground="White" Background="#444"/>
-        </StackPanel>
+        <Border Grid.Row="1" Grid.Column="0" Background="#333">
+            <StackPanel>
+                <Button Content="Crop"/>
+                <Button Content="Rotate"/>
+                <Button Content="Export"/>
+            </StackPanel>
+        </Border>
 
+        <!-- GridSplitter for left panel -->
+        <GridSplitter Grid.Row="1" Grid.Column="1"/>
 
         <!-- Center panel with scroll + zoom -->
-        <Border Grid.Row="1" Grid.Column="1" Background="#666" Margin="10">
+        <Border Grid.Row="1" Grid.Column="2" Background="#666" Margin="5">
             <ScrollViewer x:Name="ImageScrollViewer" ClipToBounds="True">
                 <Canvas x:Name="ImageCanvas">
                     <Image x:Name="PhotoImage" Stretch="Uniform" RenderTransformOrigin="0.5,0.5"/>
@@ -67,13 +105,190 @@
             </ScrollViewer>
         </Border>
 
+        <!-- GridSplitter for right panel -->
+        <GridSplitter Grid.Row="1" Grid.Column="3"/>
+
 
         <!-- Right panel (adjustments) -->
-        <StackPanel Grid.Row="1" Grid.Column="2" Background="#333" Width="200">
-            <Button Content="Brightness" Foreground="White" Background="#444"/>
-            <Button Content="Contrast" Foreground="White" Background="#444"/>
-            <Button Content="Saturation" Foreground="White" Background="#444"/>
-            <Button Content="Exposure" Foreground="White" Background="#444"/>
-        </StackPanel>
+        <Border Grid.Row="1" Grid.Column="4" Background="#333" Padding="8">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+            <Expander Header="Basic" Foreground="White" Background="#444" Margin="5" HorizontalAlignment="Stretch">
+                <StackPanel>
+                    <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Row 0: Exposure -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Exposure" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="0" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Exposure" ValueChanged="Slider_ValueChanged" Tag="Exposure"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center" x:Name="ExposureLabel"/>
+
+                                <!-- Row 1: Contrast -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Contrast" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="1" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Contrast" ValueChanged="Slider_ValueChanged" Tag="Contrast"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center" x:Name="ContrastLabel"/>
+
+                                <!-- Row 2: Highlights -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Highlights" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="2" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Highlights" ValueChanged="Slider_ValueChanged" Tag="Highlights"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center" x:Name="HighlightsLabel"/>
+                                
+                                <!-- Row 3: Shadows -->
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Shadows" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="3" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Shadows"/>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <!-- Row 4: Whites -->
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Whites" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="4" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Whites"/>
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <!-- Row 5: Blacks -->
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Blacks" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="5" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Blacks"/>
+                                <TextBlock Grid.Row="5" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <!-- Row 6: Brightness -->
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Brightness" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="6" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Brightness" ValueChanged="Slider_ValueChanged" Tag="Brightness"/>
+                                <TextBlock Grid.Row="6" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center" x:Name="BrightnessLabel"/>
+                            </Grid>
+                </StackPanel>
+            </Expander>
+
+                    <Expander Header="Tone Curve" Margin="5" HorizontalAlignment="Stretch">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider Grid.Column="0" Minimum="0" Maximum="100" Value="50" ToolTip.Tip="Curve"/>
+                                <TextBlock Grid.Column="1" Text="50" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="HSL / Color" Margin="5" HorizontalAlignment="Stretch">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Hue" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="0" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Hue"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Saturation" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="1" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Saturation"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Luminance" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="2" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Luminance"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Color Grading" Margin="5" HorizontalAlignment="Stretch">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Shadows" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="360" Value="180" ToolTip.Tip="Shadows Tint"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="180" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Midtones" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="360" Value="180" ToolTip.Tip="Midtones Tint"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="180" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Highlights" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="360" Value="180" ToolTip.Tip="Highlights Tint"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="180" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Detail" Margin="5" HorizontalAlignment="Stretch">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Sharpening" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="100" Value="50" ToolTip.Tip="Sharpening"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="50" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Noise Red." Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="100" Value="50" ToolTip.Tip="Noise Reduction"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="50" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Effects" Margin="5" HorizontalAlignment="Stretch">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Vignette" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="0" Grid.Column="1" Minimum="-100" Maximum="100" Value="0" ToolTip.Tip="Vignette"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Grain" Classes="AdjustmentLabel"/>
+                                <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="100" Value="0" ToolTip.Tip="Grain"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="0" Foreground="White" TextAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </Window>
